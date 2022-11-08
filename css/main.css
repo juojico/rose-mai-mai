@@ -1,21 +1,57 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: black;
+  background-color: #101010;
   color: white;
   font-family: 'Noto Sans TC', 'Apple LiGothic Medium', 'Microsoft JhengHei',
     'LiHei Pro Medium', 'STHeiti', 'Microsoft YaHei', arial;
 }
 
-.content {
+.container {
   box-sizing: border-box;
   width: 100%;
   max-width: 920px;
-  min-height: 100vh;
   margin: auto;
-  padding: 32px 24px;
-  background-image: url('../img/bg.jpg');
-  background-color: black;
-  background-size: contain;
-  background-position: center;
+  padding: 12px 24px;
+}
+
+header {
+  position: fixed;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header h1 {
+  margin: 0;
+}
+
+.content {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 48px 24px;
+  background-image: url('../img/logo.png');
+  background-size: 200px;
+  background-position: right bottom;
+  background-repeat: no-repeat;
+}
+
+.ingredient {
+  border-collapse: collapse;
+  min-width: 50%;
+}
+
+.ingredient th,
+.ingredient td {
+  padding: 4px 12px;
+  border: 1px solid white;
+}
+
+.ingredient th {
+  text-align: right;
 }
