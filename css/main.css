@@ -1,0 +1,21 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: black;
+  color: white;
+  font-family: 'Noto Sans TC', 'Apple LiGothic Medium', 'Microsoft JhengHei',
+    'LiHei Pro Medium', 'STHeiti', 'Microsoft YaHei', arial;
+}
+
+.content {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 920px;
+  min-height: 100vh;
+  margin: auto;
+  padding: 32px 24px;
+  background-image: url('../img/bg.jpg');
+  background-color: black;
+  background-size: contain;
+  background-position: center;
+}
