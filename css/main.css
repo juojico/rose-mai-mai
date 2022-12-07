@@ -6,6 +6,7 @@ body {
   font-family: 'Noto Sans TC', 'Apple LiGothic Medium', 'Microsoft JhengHei',
     'LiHei Pro Medium', 'STHeiti', 'Microsoft YaHei', arial;
   text-align: center;
+  overflow-x: hidden;
 }
 
 .container {
@@ -18,28 +19,31 @@ body {
 
 header {
   width: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
 }
 
 header .container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid #d5b187;
 }
 
 @media screen and (max-width: 420px) {
   header .container {
-    flex-direction: column;
+    justify-content: center;
   }
 
   .line-add {
-    margin-top: 12px;
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+    z-index: 100;
   }
 }
 
 header h1 {
   margin: 0;
-  font-size: calc(18px + 1vw);
+  font-size: calc(14px + 1vw);
 }
 
 .content {
@@ -65,10 +69,16 @@ header h1 {
 }
 
 .pudding-title {
+  width: 70%;
+  max-width: 300px;
+  height: auto;
+  margin: auto;
+  display: block;
 }
 
 .pudding {
-  width: 300px;
+  width: 70%;
+  max-width: 300px;
   height: auto;
   margin: auto;
   display: block;
