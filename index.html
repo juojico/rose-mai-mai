@@ -12,6 +12,9 @@
     <link rel="icon" href="favicon.ico" />
     <link rel="stylesheet" href="./css/main.css" />
 
+    <!-- AOS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+
     <!-- Google tag (gtag.js) -->
     <script
       async
@@ -41,13 +44,43 @@
     </header>
     <div class="content">
       <div class="container">
-        <h1 class="logo"></h1>
+        <h1
+          class="logo"
+          data-aos="fade-left"
+          data-aos-duration="1000"
+          data-aos-delay="300"
+        ></h1>
       </div>
       <div class="container">
-        <h2>黑苦焦糖布丁</h2>
-        <img src="./img/img1.jpg" class="img1" alt="" />
+        <h2 data-aos="fade-up" data-aos-duration="1000" data-aos-delay="100">
+          黑苦焦糖布丁
+        </h2>
+        <img
+          src="./img/title.png"
+          class="pudding-title"
+          alt="黑苦"
+          data-aos="flip-left"
+          data-aos-duration="1000"
+          data-aos-delay="300"
+        />
+        <img
+          src="./img/pudding.png"
+          class="pudding"
+          alt="布丁照片"
+          data-aos="fade-up"
+          data-aos-duration="1000"
+          data-aos-delay="500"
+        />
+        <h3 data-aos="fade-up" data-aos-duration="1000" data-aos-delay="500">
+          「 大人限定，小孩不愛 」
+        </h3>
       </div>
-      <div class="container ingredient-area">
+      <div
+        class="container ingredient-area"
+        data-aos="fade-up"
+        data-aos-duration="1000"
+        data-aos-delay="300"
+      >
         <h3 id="label">營養標示</h3>
         <p>每一份量105±5公克<br />本包裝含1份</p>
         <table class="ingredient">
@@ -102,5 +135,12 @@
         </table>
       </div>
     </div>
+
+    <!-- AOS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <script>
+      AOS.init();
+    </script>
   </body>
 </html>
