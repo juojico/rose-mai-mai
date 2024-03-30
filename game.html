@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rose Mai-Mai 螺絲麥麥手作布丁</title>
+
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="bookmark" href="favicon.ico" />
+
+    <meta name="robots" content="ALL" />
+    <meta property="og:image" content="https://rosemaimai.com/share.jpg" />
+
+    <link
+      href="https://fonts.googleapis.com/css?family=Noto+Sans+TC:400,700&display=swap&subset=chinese-traditional"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/main.css" />
+    <link rel="stylesheet" href="./css/game.css" />
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <h1>Rose Mai-Mai 螺絲麥麥手作布丁</h1>
+      </div>
+    </header>
+
+    <div class="gameArea" id="gameArea">
+      <div class="time" id="time">--:--</div>
+      <div class="arrow" id="arrow"></div>
+      <div class="player" id="player"></div>
+      <div class="pot" id="pot"></div>
+      <div class="foodIno" id="foodInfo">
+        已加總重 <span id="foodWeight">0</span> g<br />
+        可做 <span id="foodCup">0</span> 杯布丁
+      </div>
+      <div class="button startBake" id="startBake">開始烤布丁</div>
+      <div class="foodArea" id="foodArea">
+        <div class="food" id="food"></div>
+        <div class="foodText" id="foodText"></div>
+      </div>
+    </div>
+
+    <script src="./js/game.js"></script>
+  </body>
+</html>
