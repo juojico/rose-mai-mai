@@ -15,9 +15,9 @@ const setting = {
 const foods = [
   { name: 'milk', text: '牛奶', weight: 10, price: 1 },
   { name: 'cream', text: '鮮奶油', weight: 10, price: 2.5 },
-  { name: 'eggYellow', text: '蛋黃', weight: 10, price: 3 },
-  { name: 'eggWhite', text: '蛋白', weight: 10, price: 1 },
-  { name: 'sugar', text: '糖', weight: 10, price: 0.4 },
+  { name: 'eggYellow', text: '蛋黃', weight: 5, price: 2 },
+  { name: 'eggWhite', text: '蛋白', weight: 5, price: 0.5 },
+  { name: 'sugar', text: '糖', weight: 2, price: 0.4 },
 ];
 
 const defaultState = {
@@ -26,6 +26,7 @@ const defaultState = {
   foodInPot: 0,
   elements: {},
   throwElements: {},
+  totalWeight: 0,
   cups: 0,
 };
 
@@ -45,20 +46,22 @@ const ui = {
   foodCupEl: document.getElementById('foodCup'),
   foodDetailsAreaEl: document.getElementById('foodDetailsArea'),
   startBakeEl: document.getElementById('startBake'),
-  foodDetailsAreaText: () => {
+  update: () => {
+    let newTotalWeight = 0;
     const list = Object.entries(state.elements).map((i) => {
       const item = foods.find((f) => f.name === i[0]);
+      newTotalWeight += i[1] * item.weight;
       return `${item.text} ... ${i[1] * item.weight}g`;
     });
+    state.totalWeight = newTotalWeight;
 
     ui.foodDetailsAreaEl.textContent = list.join('\n');
-  },
-  update: () => {
-    const cup = Math.floor(state.foodInPot / 10);
-    ui.foodWeightEl.textContent = state.foodInPot * 10;
-    ui.foodCupEl.textContent = cup;
-    ui.startBakeEl.classList.toggle('on', cup > 0);
-    ui.foodDetailsAreaText();
+
+    ui.foodWeightEl.textContent = newTotalWeight;
+
+    state.cups = Math.floor(newTotalWeight / 100);
+    ui.foodCupEl.textContent = state.cups;
+    ui.startBakeEl.classList.toggle('on', state.cups > 0);
   },
 };
 
@@ -262,39 +265,48 @@ const bake = {
   resultPuddingEl: document.getElementById('resultPudding'),
   resultDetailsEl: document.getElementById('resultDetails'),
   calc: () => {
+    // 計算比例及成本
     let total = 0;
+    let totalPrice = 0;
 
     const list = Object.entries(state.elements).map((i) => {
       const item = foods.find((f) => f.name === i[0]);
-      total += i[1] * item.price;
+      total += i[1] * item.weight;
+      totalPrice += i[1] * item.price;
+      bake.data[i[0]] = i[1] * item.weight;
       return `${item.text} ... ${i[1] * item.weight}g`;
     });
 
-    let throwTotal = 0;
+    bake.data.total = total;
+
+    // 計算耗損成本
+    let throwTotalPrice = 0;
 
     const throwList = Object.entries(state.throwElements).map((i) => {
       const item = foods.find((f) => f.name === i[0]);
-      throwTotal += i[1] * item.price;
+      throwTotalPrice += i[1] * item.price;
       return `${item.text} ... ${i[1] * item.weight}g`;
     });
 
-    const resultDetails = `你的配方:\n${list.join('\n')}\n成本:${numberFormat(
-      total
-    )}元\n損耗成本:${numberFormat(throwTotal)}元`;
+    const resultDetails = `你的配方:\n${list.join(
+      '\n'
+    )}\n食材成本:${numberFormat(totalPrice)}元\n損耗成本:${numberFormat(
+      throwTotalPrice
+    )}元`;
 
     console.log(resultDetails);
 
     bake.resultDetailsEl.textContent = resultDetails;
   },
   start: () => {
-    const total = state.foodInPot;
-    const cup = Math.floor(state.foodInPot / 10);
-    const y = state.elements?.eggYellow || 0;
-    const w = state.elements?.eggWhite || 0;
-    const m = state.elements?.milk || 0;
-    const c = state.elements?.cream || 0;
-    const s = state.elements?.sugar || 0;
     bake.calc();
+
+    const total = bake.data.total;
+    const y = bake.data?.eggYellow || 0;
+    const w = bake.data?.eggWhite || 0;
+    const m = bake.data?.milk || 0;
+    const c = bake.data?.cream || 0;
+    const s = bake.data?.sugar || 0;
 
     console.log(
       '🚀 ~ startBake ~ startBake:',
@@ -302,6 +314,7 @@ const bake = {
       state.foodInPot,
       `加入食材：`,
       state.elements,
+      bake.data,
       // `已丟出食材：`,
       // state.throwElements
       'm ' + (m / total).toFixed(3),
@@ -319,22 +332,22 @@ const bake = {
       /* ====== 沒烤出布丁 ====== */
       // 只有糖
       case s >= total:
-        result = `獲得 ${cup} 杯熱熱的糖! (你只加了糖)`;
+        result = `獲得 ${state.cups} 杯熱熱的糖! (你只加了糖)`;
         isFail = true;
         break;
       // 糖過多
       case s / total > 0.4:
-        result = `獲得 ${cup} 杯糖漿! (糖比例過高)`;
+        result = `獲得 ${state.cups} 杯糖漿! (糖比例過高)`;
         isFail = true;
         break;
       // 只有蛋黃和蛋白
       case y + w + s >= total:
-        result = `獲得 ${cup} 塊硬硬的蒸蛋! (你只加了蛋)`;
+        result = `獲得 ${state.cups} 塊硬硬的蒸蛋! (你只加了蛋)`;
         isFail = true;
         break;
       // 沒有加蛋
       case m + c + s >= total:
-        result = `獲得 ${cup} 杯熱牛奶! (你沒有加蛋)`;
+        result = `獲得 ${state.cups} 杯熱牛奶! (你沒有加蛋)`;
         isFail = true;
         break;
       // 蛋黃蛋白<1/8
@@ -344,32 +357,32 @@ const bake = {
         break;
       // 蛋黃蛋白>1/2
       case (y + w) / total > 0.4:
-        result = `獲得 ${cup} 杯蒸蛋! (蛋比例過高)`;
+        result = `獲得 ${state.cups} 杯蒸蛋! (蛋比例過高)`;
         isFail = true;
         break;
 
       /* ====== 基本布丁類別 ====== */
       // 奶酪
       case y <= 0:
-        result = `獲得 ${cup} 杯奶酪`;
+        result = `獲得 ${state.cups} 杯奶酪`;
         break;
       // 中式硬布丁
       case c / total < 0.1 && w / (y + w) >= 0.5 && (y + w) / total > 0.25:
-        result = `烤出了 ${cup} 杯中式硬布丁`;
+        result = `烤出了 ${state.cups} 杯中式硬布丁`;
         break;
       // 昭和硬布丁
       case c / total < 0.2 &&
         y / (y + w) > 0.5 &&
         (y + w) / total > 0.25 &&
         s / total > 0.04:
-        result = `烤出了 ${cup} 杯昭和硬布丁`;
+        result = `烤出了 ${state.cups} 杯昭和硬布丁`;
         break;
       // 布蕾
       case c / total > 0.35 &&
         y / (y + w) >= 0.9 &&
         (y + w) / total < 0.2 &&
         s / total > 0.04:
-        result = `烤出了 ${cup} 杯布蕾`;
+        result = `烤出了 ${state.cups} 杯布蕾`;
         break;
       // 螺絲麥麥的軟布丁
       case c / total > 0.3 &&
@@ -378,15 +391,15 @@ const bake = {
         s / total < 0.06 &&
         (y + w) / total < 0.2 &&
         y / (y + w) > 0.5:
-        result = `恭喜你!!烤出了 ${cup} 杯螺絲麥麥的軟布丁!`;
+        result = `恭喜你!!烤出了 ${state.cups} 杯螺絲麥麥的軟布丁!`;
         break;
       // 硬布丁
       case c / total < 0.2 || (y + w) / total > 0.25:
-        result = `烤出了 ${cup} 杯硬布丁`;
+        result = `烤出了 ${state.cups} 杯硬布丁`;
         break;
       // 軟布丁
       case c / total >= 0.2 || (y + w) / total <= 0.25:
-        result = `烤出了 ${cup} 杯軟布丁`;
+        result = `烤出了 ${state.cups} 杯軟布丁`;
         break;
 
       /* ====== 口感 ====== */
