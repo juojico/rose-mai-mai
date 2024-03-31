@@ -1,23 +1,31 @@
 body {
   background-color: #555;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+
+.gameContainer {
+  background-color: #222;
 }
 
 .gameArea {
   position: relative;
-  width: 100%;
+  width: 60dvh;
   height: 100dvh;
+  margin: auto;
   font-weight: bold;
   color: white;
-  background-color: #555;
+  background-image: linear-gradient(0deg, #716f6a 4%, #9a968f 4% 27%, #333 27% 30%, #737471 30%, #585b58);
   overflow: hidden;
 }
 
 .arrow {
   position: absolute;
-  width: 10%;
+  width: 16%;
   height: 1%;
-  left: 75%;
-  top: 90%;
+  left: 62%;
+  top: 76%;
   background-color: hsl(1, 100%, 80%);
   transform-origin: right bottom;
   z-index: 9;
@@ -25,10 +33,10 @@ body {
 
 .player {
   position: absolute;
-  width: 18vw;
-  height: 10vw;
-  left: 78%;
-  top: 85%;
+  width: 36%;
+  padding-top: 20%;
+  left: 66%;
+  top: 70%;
   background-image: url("../img/game/player.png");
   background-size: 100% 100%;
   cursor: pointer;
@@ -49,8 +57,8 @@ body {
 
 .food {
   position: absolute;
-  width: 5vw;
-  height: 5vw;
+  width: 10%;
+  height: 6%;
   background-size: 100% 100%;
   z-index: 11;
   pointer-events: none;
@@ -73,52 +81,77 @@ body {
 .food.sugar {
   background-image: url("../img/game/sugar.png");
 }
-
-.foodArea {
-  position: absolute;
-  width: 5vw;
-  height: 5vw;
-  left: 84%;
-  top: 90%;
+.food.onHand {
+  left: 80%;
+  top: 79%;
+  transform: translate(-50%, -50%);
   z-index: 12;
-  pointer-events: none;
 }
-.foodArea .foodText {
+
+.foodText {
   position: absolute;
-  width: 12vw;
-  top: 4.5vw;
-  left: -3vw;
+  width: 20%;
+  left: 71%;
+  top: 82%;
   font-size: 16px;
   text-align: center;
   white-space: nowrap;
-}
-
-.pot {
-  position: absolute;
-  width: 20%;
-  height: 8%;
-  left: 30%;
-  top: 80%;
-  border: 1vw solid white;
-  border-radius: 0 0 30% 30%;
-  border-top: none;
-  z-index: 5;
+  z-index: 12;
+  pointer-events: none;
 }
 
 .button {
   display: inline-block;
-  padding: 12px 20px;
-  margin-top: 12px;
+  width: 16%;
+  padding: 12px;
   border: 2px solid white;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 16px;
-  opacity: 0;
+  white-space: nowrap;
+  z-index: 20;
   cursor: pointer;
+}
+.button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.changeFood {
+  position: absolute;
+  left: 70%;
+  top: 86%;
+}
+
+.pot {
+  position: absolute;
+  box-sizing: border-box;
+  width: 26%;
+  height: 8%;
+  left: 16%;
+  top: 62%;
+  background-color: #deabab;
+  border: 8px solid #d88b8b;
+  border-radius: 6% 6% 30% 30%;
+  border-top: none;
+  z-index: 5;
+}
+.pot::after {
+  content: "";
+  position: absolute;
+  width: 80%;
+  height: 16%;
+  left: 100%;
+  background-color: #d88b8b;
+  border-radius: 10px;
+}
+
+.startBake {
+  margin-top: 12px;
+  opacity: 0;
   pointer-events: none;
   transform: translateY(-100%);
   transition: opacity 0.2s, transform 0.2s;
 }
-.button.on {
+.startBake.on {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
@@ -128,14 +161,56 @@ body {
   white-space: break-spaces;
 }
 
+.foodArea {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.dialogContainer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+.dialogContainer.on {
+  display: flex;
+}
+
 .resultArea {
+  position: absolute;
+  width: 300px;
+  padding: 20px;
+  background-color: #f9f6ef;
+  color: #333;
   margin-top: 12px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px black;
+}
+.resultArea .button {
+  width: auto;
+  margin: auto 10px;
+  border-color: #333;
+}
+.resultArea .button:hover {
+  background-color: rgba(60, 60, 60, 0.1);
 }
 
 .resultPudding {
   font-size: 20px;
+  color: #f05522;
 }
 
 .resultDetails {
+  margin: 20px auto;
   white-space: break-spaces;
 }
