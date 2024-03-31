@@ -117,7 +117,7 @@ body {
 
 .button {
   display: inline-block;
-  width: 16%;
+  min-width: 16%;
   padding: 12px;
   border: 2px solid white;
   border-radius: 6px;
@@ -217,7 +217,6 @@ body {
   box-shadow: 0 4px 12px black;
 
   .button {
-    width: auto;
     margin: auto 10px;
     border-color: #333;
     &:hover {
