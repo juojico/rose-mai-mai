@@ -12,10 +12,6 @@ body {
   overflow: hidden;
 }
 
-.time {
-  font-size: 6vw;
-}
-
 .arrow {
   position: absolute;
   width: 10%;
@@ -115,7 +111,7 @@ body {
   margin-top: 12px;
   border: 2px solid white;
   border-radius: 4px;
-  font-size: 2vw;
+  font-size: 16px;
   opacity: 0;
   cursor: pointer;
   pointer-events: none;
@@ -126,4 +122,20 @@ body {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+}
+
+.foodDetailsArea {
+  white-space: break-spaces;
+}
+
+.resultArea {
+  margin-top: 12px;
+}
+
+.resultPudding {
+  font-size: 20px;
+}
+
+.resultDetails {
+  white-space: break-spaces;
 }

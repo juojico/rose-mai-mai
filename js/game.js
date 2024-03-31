@@ -1,130 +1,149 @@
 /* ====== 遊戲設定 ====== */
 const setting = {
-  time: 600,
   // 是否上一顆球投完才能再投(true|false)
   needShotOver: false,
   // 投籃隨機值(0~100)
   throwFoodRandom: 30,
   // 每顆球最大運算格數(100~800)
   maxFrames: 400,
+  pot: {
+    x: [30, 50],
+    y: [80, 88],
+  },
 };
 
-const timeFormat = (time) => {
-  const minutes = String(Math.floor(time / 60)).padStart(2, 0);
-  const seconds = String(time % 60).padStart(2, 0);
+const foods = [
+  { name: 'milk', text: '牛奶', weight: 10, price: 1 },
+  { name: 'cream', text: '鮮奶油', weight: 10, price: 2.5 },
+  { name: 'eggYellow', text: '蛋黃', weight: 10, price: 3 },
+  { name: 'eggWhite', text: '蛋白', weight: 10, price: 1 },
+  { name: 'sugar', text: '糖', weight: 10, price: 0.4 },
+];
 
-  return `${minutes}:${seconds}`;
+const defaultState = {
+  currentFoodIndex: 0,
+  currentFood: foods[0],
+  foodInPot: 0,
+  elements: {},
+  throwElements: {},
+  cups: 0,
 };
 
-/* ==================== */
+let state = JSON.parse(JSON.stringify(defaultState));
 
-let timeLeft = setting.time;
+/* ====== 工具 ====== */
 
-const timeEl = document.getElementById('time');
+const numberFormat = (number, maxDigits = 1) =>
+  new Intl.NumberFormat('zh-Hans-CN', {
+    maximumFractionDigits: maxDigits,
+  }).format(number);
 
-const render = () => {
-  timeLeft--;
-  timeEl.textContent = timeFormat(timeLeft);
-  if (timeLeft < 1) {
-    gameEmd();
-  }
+/* ====== 畫面更新 ====== */
+
+const ui = {
+  foodWeightEl: document.getElementById('foodWeight'),
+  foodCupEl: document.getElementById('foodCup'),
+  foodDetailsAreaEl: document.getElementById('foodDetailsArea'),
+  startBakeEl: document.getElementById('startBake'),
+  foodDetailsAreaText: () => {
+    const list = Object.entries(state.elements).map((i) => {
+      const item = foods.find((f) => f.name === i[0]);
+      return `${item.text} ... ${i[1] * item.weight}g`;
+    });
+
+    ui.foodDetailsAreaEl.textContent = list.join('\n');
+  },
+  update: () => {
+    const cup = Math.floor(state.foodInPot / 10);
+    ui.foodWeightEl.textContent = state.foodInPot * 10;
+    ui.foodCupEl.textContent = cup;
+    if (cup > 0) {
+      ui.startBakeEl.classList.add('on');
+    }
+    ui.foodDetailsAreaText();
+  },
 };
 
 /* ====== 箭頭 ====== */
 
-const rotateMax = 100;
-const rotateMin = 30;
-let deg = 30;
-let rotateTo = 1;
+const arrow = {
+  rotateMax: 100,
+  rotateMin: 30,
+  deg: 30,
+  rotateTo: 1,
+  el: document.getElementById('arrow'),
+  reset: () => {
+    arrow.deg = 30;
+    arrow.rotateTo = 1;
+    arrow.el.style.transform = `rotate(${(arrow.deg += arrow.rotateTo)}deg)`;
+  },
+  animate: () => {
+    const arrowAnimate = () => {
+      arrow.el.style.transform = `rotate(${(arrow.deg += arrow.rotateTo)}deg)`;
 
-const arrowEl = document.getElementById('arrow');
+      if (arrow.deg > arrow.rotateMax) {
+        arrow.rotateTo = -1;
+      }
+      if (arrow.deg < arrow.rotateMin) {
+        arrow.rotateTo = 1;
+      }
 
-const arrowAni = () => {
-  const arrowAnimate = () => {
-    arrowEl.style.transform = `rotate(${(deg += rotateTo)}deg)`;
+      window.requestAnimationFrame(arrowAnimate);
+    };
 
-    if (deg > rotateMax) {
-      rotateTo = -1;
-    }
-    if (deg < rotateMin) {
-      rotateTo = 1;
-    }
-    if (timeLeft < 1) {
-      return;
-    }
-
-    window.requestAnimationFrame(arrowAnimate);
-  };
-
-  arrowAnimate();
+    arrowAnimate();
+  },
+  init: () => {
+    arrow.reset();
+    arrow.animate();
+  },
 };
 
 /* ====== 鍋子 ====== */
 
-const potEl = document.getElementById('pot');
-const foodWeightEl = document.getElementById('foodWeight');
-const foodCupEl = document.getElementById('foodCup');
-const startBakeEl = document.getElementById('startBake');
-
 const pot = {
-  width: 20,
-  height: 8,
-  left: 30,
-  top: 80,
-};
-
-let foodInPot = 0;
-let elements = {};
-
-const setPot = (foodName) => {
-  foodInPot++;
-  if (elements[foodName]) {
-    elements[foodName] += 1;
-  } else {
-    elements[foodName] = 1;
-  }
-  const cup = Math.floor(foodInPot / 10);
-  foodWeightEl.textContent = foodInPot * 10;
-  foodCupEl.textContent = cup;
-  console.log('🚀 ~ setPot ~ setPot:', foodInPot, foodName, elements);
-  if (cup > 0) {
-    startBakeEl.classList.add('on');
-  }
+  el: document.getElementById('pot'),
+  setPot: (foodName) => {
+    state.foodInPot++;
+    if (state.elements[foodName]) {
+      state.elements[foodName] += 1;
+    } else {
+      state.elements[foodName] = 1;
+    }
+    ui.update();
+  },
 };
 
 /* ====== 選擇食材 ====== */
 
-const foods = ['milk', 'cream', 'eggYellow', 'eggWhite', 'sugar'];
-const foodsText = ['牛奶', '鮮奶油', '蛋黃', '蛋白', '糖'];
-let currentFoodIndex = 0;
-
-const foodEl = document.getElementById('food');
-const foodTextEl = document.getElementById('foodText');
-
-const setFood = () => {
-  foodEl.classList = `food ${foods[currentFoodIndex]}`;
-  foodTextEl.textContent = `${foodsText[currentFoodIndex]}(10g)`;
-};
-
-setFood();
-
-const selectFood = (index = 1) => {
-  let newIndex = currentFoodIndex + index;
-  if (newIndex > foods.length - 1) {
-    newIndex = 0;
-  }
-  if (newIndex < 0) {
-    newIndex = foods.length - 1;
-  }
-  currentFoodIndex = newIndex;
-  setFood();
+const selectFood = {
+  el: document.getElementById('food'),
+  textEl: document.getElementById('foodText'),
+  setFood: () => {
+    selectFood.el.classList = `food ${state.currentFood.name}`;
+    selectFood.textEl.textContent = `${state.currentFood.text}(${state.currentFood.weight}g)`;
+  },
+  changeFood: (index = 1) => {
+    let newIndex = state.currentFoodIndex + index;
+    if (newIndex > foods.length - 1) {
+      newIndex = 0;
+    }
+    if (newIndex < 0) {
+      newIndex = foods.length - 1;
+    }
+    state.currentFoodIndex = newIndex;
+    state.currentFood = foods[newIndex];
+    selectFood.setFood();
+  },
+  init: () => {
+    selectFood.setFood();
+  },
 };
 
 /* ====== 投球 ====== */
 
 let hasThrow = false;
 let foodId = 1;
-let throwElements = {};
 
 const decimal = 10000;
 const random = setting.throwFoodRandom * 100;
@@ -138,7 +157,7 @@ const throwFood = () => {
   const topValue = 1.9;
   const g = 0.02 * decimal;
   let wind = Math.random() - 0.5;
-  const radians = ((deg + 90) * Math.PI) / 180;
+  const radians = ((arrow.deg + 90) * Math.PI) / 180;
   let topAdd = Math.round(
     Math.cos(radians) * topValue * decimal + Math.random() * random
   );
@@ -152,34 +171,34 @@ const throwFood = () => {
 
   hasThrow = true;
 
-  const currentFood = foods[currentFoodIndex];
-  if (throwElements[currentFood]) {
-    throwElements[currentFood] += 1;
+  const foodName = state.currentFood.name;
+  if (state.throwElements[foodName]) {
+    state.throwElements[foodName] += 1;
   } else {
-    throwElements[currentFood] = 1;
+    state.throwElements[foodName] = 1;
   }
-  console.log('🚀 ~ throwFood ~ throwElements:', throwElements);
+  console.log('🚀 ~ throwFood ~ state.throwElements:', state.throwElements);
 
   const food = document.createElement('div');
 
   food.id = `food${++foodId}`;
-  food.classList = `food ${currentFood}`;
-  food.setAttribute('data-food', currentFood);
+  food.classList = `food ${foodName}`;
+  food.setAttribute('data-food', foodName);
   food.style.top = `${top}%`;
   food.style.left = `${left}%`;
 
   gameAreaEl.append(food);
 
   const rangeX = {
-    top: [pot.top + pot.height - 3, pot.top + pot.height - 1],
-    left: [pot.left + 2, pot.left + pot.width],
+    top: [setting.pot.y[1] - 3, setting.pot.y[1] - 1],
+    left: [setting.pot.x[0] + 2, setting.pot.x[1]],
   };
 
   const foodAnimate = () => {
     frames++;
 
     playerEl.classList.toggle('on', hasThrow && frames < 10);
-    foodEl.classList.toggle('hide', hasThrow && frames < 20);
+    selectFood.el.classList.toggle('hide', hasThrow && frames < 20);
 
     // 是否進球
     if (!isAlreadyIn) {
@@ -191,7 +210,7 @@ const throwFood = () => {
         topAdd > 0
       ) {
         isAlreadyIn = true;
-        setPot(food.getAttribute('data-food'));
+        pot.setPot(food.getAttribute('data-food'));
         hasThrow = false;
         return;
       }
@@ -239,131 +258,158 @@ const throwFood = () => {
 
 /* ====== 烤布丁 ====== */
 
-const startBake = () => {
-  const total = foodInPot;
-  const cup = Math.floor(foodInPot / 10);
-  const y = elements?.eggYellow || 0;
-  const w = elements?.eggWhite || 0;
-  const m = elements?.milk || 0;
-  const c = elements?.cream || 0;
-  const s = elements?.sugar || 0;
+const bake = {
+  data: {},
+  resultAreaEl: document.getElementById('resultArea'),
+  resultPuddingEl: document.getElementById('resultPudding'),
+  resultDetailsEl: document.getElementById('resultDetails'),
+  calc: () => {
+    let total = 0;
 
-  console.log(
-    '🚀 ~ startBake ~ startBake:',
-    `食材總數：`,
-    foodInPot,
-    `加入食材：`,
-    elements,
-    // `已丟出食材：`,
-    // throwElements
-    'm ' + (m / total).toFixed(3),
-    'w ' + (w / total).toFixed(3),
-    'y ' + (y / total).toFixed(3),
-    'c ' + (c / total).toFixed(3),
-    's ' + (s / total).toFixed(3)
-  );
+    const list = Object.entries(state.elements).map((i) => {
+      const item = foods.find((f) => f.name === i[0]);
+      total += i[1] * item.price;
+      return `${item.text} ... ${i[1] * item.weight}g`;
+    });
 
-  let isFail = false;
+    let throwTotal = 0;
 
-  let result = '你烤出了一個意想不到的布丁!';
+    const throwList = Object.entries(state.throwElements).map((i) => {
+      const item = foods.find((f) => f.name === i[0]);
+      throwTotal += i[1] * item.price;
+      return `${item.text} ... ${i[1] * item.weight}g`;
+    });
 
-  switch (true) {
-    /* ====== 沒烤出布丁 ====== */
-    // 只有糖
-    case s >= total:
-      result = `獲得 ${cup} 杯熱熱的糖! (你只加了糖)`;
-      isFail = true;
-      break;
-    // 糖過多
-    case s / total > 0.4:
-      result = `獲得 ${cup} 杯糖漿! (糖比例過高)`;
-      isFail = true;
-      break;
-    // 只有蛋黃和蛋白
-    case y + w + s >= total:
-      result = `獲得 ${cup} 塊硬硬的蒸蛋! (你只加了蛋)`;
-      isFail = true;
-      break;
-    // 沒有加蛋
-    case m + c + s >= total:
-      result = `獲得 ${cup} 杯熱牛奶! (你沒有加蛋)`;
-      isFail = true;
-      break;
-    // 蛋黃蛋白<1/8
-    case (y + w) / total < 0.125:
-      result = '布丁沒有成型! (蛋黃+蛋白需至少佔1/8)';
-      isFail = true;
-      break;
-    // 蛋黃蛋白>1/2
-    case (y + w) / total > 0.4:
-      result = `獲得 ${cup} 杯蒸蛋! (蛋比例過高)`;
-      isFail = true;
-      break;
+    const resultDetails = `你的配方:\n${list.join('\n')}\n成本:${numberFormat(
+      total
+    )}元\n損耗成本:${numberFormat(throwTotal)}元`;
 
-    /* ====== 基本布丁類別 ====== */
-    // 奶酪
-    case y <= 0:
-      result = `獲得 ${cup} 杯奶酪`;
-      break;
-    // 中式硬布丁
-    case c / total < 0.1 && w / (y + w) >= 0.5 && (y + w) / total > 0.25:
-      result = `烤出了 ${cup} 杯中式硬布丁`;
-      break;
-    // 昭和硬布丁
-    case c / total < 0.2 &&
-      y / (y + w) > 0.5 &&
-      (y + w) / total > 0.25 &&
-      s / total > 0.04:
-      result = `烤出了 ${cup} 杯昭和硬布丁`;
-      break;
-    // 布蕾
-    case c / total > 0.35 &&
-      y / (y + w) >= 0.9 &&
-      (y + w) / total < 0.2 &&
-      s / total > 0.04:
-      result = `烤出了 ${cup} 杯布蕾`;
-      break;
-    // 螺絲麥麥的軟布丁
-    case c / total > 0.3 &&
-      m / total > 0.45 &&
-      s / total > 0.04 &&
-      s / total < 0.06 &&
-      (y + w) / total < 0.2 &&
-      y / (y + w) > 0.5:
-      result = `恭喜你!!烤出了 ${cup} 杯螺絲麥麥的軟布丁!`;
-      break;
-    // 硬布丁
-    case c / total < 0.2 && (y + w) / total > 0.25:
-      result = `烤出了 ${cup} 杯硬布丁`;
-      break;
-    // 軟布丁
-    case c / total > 0.3 || (y + w) / total < 0.25:
-      result = `烤出了 ${cup} 杯軟布丁`;
-      break;
+    console.log(resultDetails);
 
-    /* ====== 口感 ====== */
-    /* ====== 味道 ====== */
+    bake.resultDetailsEl.textContent = resultDetails;
+  },
+  start: () => {
+    const total = state.foodInPot;
+    const cup = Math.floor(state.foodInPot / 10);
+    const y = state.elements?.eggYellow || 0;
+    const w = state.elements?.eggWhite || 0;
+    const m = state.elements?.milk || 0;
+    const c = state.elements?.cream || 0;
+    const s = state.elements?.sugar || 0;
+    bake.calc();
 
-    default:
-      break;
-  }
+    console.log(
+      '🚀 ~ startBake ~ startBake:',
+      `食材總數：`,
+      state.foodInPot,
+      `加入食材：`,
+      state.elements,
+      // `已丟出食材：`,
+      // state.throwElements
+      'm ' + (m / total).toFixed(3),
+      'w ' + (w / total).toFixed(3),
+      'y ' + (y / total).toFixed(3),
+      'c ' + (c / total).toFixed(3),
+      's ' + (s / total).toFixed(3)
+    );
 
-  console.log('🚀 ~ startBake ~ result:', result);
+    let isFail = false;
+
+    let result = '你烤出了一個意想不到的布丁!';
+
+    switch (true) {
+      /* ====== 沒烤出布丁 ====== */
+      // 只有糖
+      case s >= total:
+        result = `獲得 ${cup} 杯熱熱的糖! (你只加了糖)`;
+        isFail = true;
+        break;
+      // 糖過多
+      case s / total > 0.4:
+        result = `獲得 ${cup} 杯糖漿! (糖比例過高)`;
+        isFail = true;
+        break;
+      // 只有蛋黃和蛋白
+      case y + w + s >= total:
+        result = `獲得 ${cup} 塊硬硬的蒸蛋! (你只加了蛋)`;
+        isFail = true;
+        break;
+      // 沒有加蛋
+      case m + c + s >= total:
+        result = `獲得 ${cup} 杯熱牛奶! (你沒有加蛋)`;
+        isFail = true;
+        break;
+      // 蛋黃蛋白<1/8
+      case (y + w) / total < 0.125:
+        result = '布丁沒有成型! (蛋黃+蛋白需至少佔1/8)';
+        isFail = true;
+        break;
+      // 蛋黃蛋白>1/2
+      case (y + w) / total > 0.4:
+        result = `獲得 ${cup} 杯蒸蛋! (蛋比例過高)`;
+        isFail = true;
+        break;
+
+      /* ====== 基本布丁類別 ====== */
+      // 奶酪
+      case y <= 0:
+        result = `獲得 ${cup} 杯奶酪`;
+        break;
+      // 中式硬布丁
+      case c / total < 0.1 && w / (y + w) >= 0.5 && (y + w) / total > 0.25:
+        result = `烤出了 ${cup} 杯中式硬布丁`;
+        break;
+      // 昭和硬布丁
+      case c / total < 0.2 &&
+        y / (y + w) > 0.5 &&
+        (y + w) / total > 0.25 &&
+        s / total > 0.04:
+        result = `烤出了 ${cup} 杯昭和硬布丁`;
+        break;
+      // 布蕾
+      case c / total > 0.35 &&
+        y / (y + w) >= 0.9 &&
+        (y + w) / total < 0.2 &&
+        s / total > 0.04:
+        result = `烤出了 ${cup} 杯布蕾`;
+        break;
+      // 螺絲麥麥的軟布丁
+      case c / total > 0.3 &&
+        m / total > 0.45 &&
+        s / total > 0.04 &&
+        s / total < 0.06 &&
+        (y + w) / total < 0.2 &&
+        y / (y + w) > 0.5:
+        result = `恭喜你!!烤出了 ${cup} 杯螺絲麥麥的軟布丁!`;
+        break;
+      // 硬布丁
+      case c / total < 0.2 || (y + w) / total > 0.25:
+        result = `烤出了 ${cup} 杯硬布丁`;
+        break;
+      // 軟布丁
+      case c / total >= 0.2 || (y + w) / total <= 0.25:
+        result = `烤出了 ${cup} 杯軟布丁`;
+        break;
+
+      /* ====== 口感 ====== */
+      /* ====== 味道 ====== */
+
+      default:
+        break;
+    }
+
+    console.log('🚀 ~ startBake ~ result:', result);
+
+    bake.resultAreaEl.classList.add('on');
+    bake.resultPuddingEl.textContent = result;
+  },
 };
 
 /* ====== 遊戲流程 ====== */
 
-let timeInterval;
-
 const gameStart = () => {
-  timeInterval = setInterval(render, 1000);
-  arrowAni();
-};
-
-const gameEmd = () => {
-  clearInterval(timeInterval);
-  console.log('🚀 ~ gameEmd ');
-  alert(`遊戲結束\n獲得食材${foodInPot}`);
+  arrow.init();
+  selectFood.init();
 };
 
 window.addEventListener('keydown', (e) => {
@@ -373,11 +419,11 @@ window.addEventListener('keydown', (e) => {
   }
   // 左
   if (e.keyCode == 65 || e.keyCode == 37) {
-    selectFood();
+    selectFood.changeFood();
   }
   // 右
   if (e.keyCode == 68 || e.keyCode == 39) {
-    selectFood(-1);
+    selectFood.changeFood(-1);
   }
 });
 
@@ -385,8 +431,8 @@ playerEl.addEventListener('click', () => {
   throwFood();
 });
 
-startBakeEl.addEventListener('click', () => {
-  startBake();
+ui.startBakeEl.addEventListener('click', () => {
+  bake.start();
 });
 
 gameStart();
