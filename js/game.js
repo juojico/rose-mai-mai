@@ -3,12 +3,12 @@ const setting = {
   // 是否上一顆球投完才能再投(true|false)
   needShotOver: false,
   // 投籃隨機值(0~100)
-  throwFoodRandom: 30,
+  throwFoodRandom: 10,
   // 每顆球最大運算格數(100~800)
   maxFrames: 400,
   pot: {
-    x: [30, 50],
-    y: [80, 88],
+    x: [16, 42],
+    y: [62, 70],
   },
 };
 
@@ -57,9 +57,7 @@ const ui = {
     const cup = Math.floor(state.foodInPot / 10);
     ui.foodWeightEl.textContent = state.foodInPot * 10;
     ui.foodCupEl.textContent = cup;
-    if (cup > 0) {
-      ui.startBakeEl.classList.add('on');
-    }
+    ui.startBakeEl.classList.toggle('on', cup > 0);
     ui.foodDetailsAreaText();
   },
 };
@@ -119,8 +117,9 @@ const pot = {
 const selectFood = {
   el: document.getElementById('food'),
   textEl: document.getElementById('foodText'),
+  changeFoodEl: document.getElementById('changeFood'),
   setFood: () => {
-    selectFood.el.classList = `food ${state.currentFood.name}`;
+    selectFood.el.classList = `food onHand ${state.currentFood.name}`;
     selectFood.textEl.textContent = `${state.currentFood.text}(${state.currentFood.weight}g)`;
   },
   changeFood: (index = 1) => {
@@ -148,7 +147,7 @@ let foodId = 1;
 const decimal = 10000;
 const random = setting.throwFoodRandom * 100;
 
-const gameAreaEl = document.getElementById('gameArea');
+const foodAreaEl = document.getElementById('foodArea');
 const playerEl = document.getElementById('player');
 
 const throwFood = () => {
@@ -164,8 +163,8 @@ const throwFood = () => {
   let leftAdd = Math.round(
     -Math.sin(radians) * decimal + Math.random() * random
   );
-  let top = 90;
-  let left = 85;
+  let top = 79;
+  let left = 80;
   let isAlreadyIn = false;
   let frames = 0;
 
@@ -187,7 +186,7 @@ const throwFood = () => {
   food.style.top = `${top}%`;
   food.style.left = `${left}%`;
 
-  gameAreaEl.append(food);
+  foodAreaEl.append(food);
 
   const rangeX = {
     top: [setting.pot.y[1] - 3, setting.pot.y[1] - 1],
@@ -260,7 +259,6 @@ const throwFood = () => {
 
 const bake = {
   data: {},
-  resultAreaEl: document.getElementById('resultArea'),
   resultPuddingEl: document.getElementById('resultPudding'),
   resultDetailsEl: document.getElementById('resultDetails'),
   calc: () => {
@@ -400,8 +398,32 @@ const bake = {
 
     console.log('🚀 ~ startBake ~ result:', result);
 
-    bake.resultAreaEl.classList.add('on');
     bake.resultPuddingEl.textContent = result;
+    dialog.open();
+  },
+};
+
+/* ====== 結果彈窗 ====== */
+
+const dialog = {
+  el: document.getElementById('dialog'),
+  continueEl: document.getElementById('continue'),
+  restartEl: document.getElementById('restart'),
+  close: () => {
+    dialog.el.classList.remove('on');
+  },
+  open: () => {
+    dialog.el.classList.add('on');
+  },
+  init: () => {
+    dialog.continueEl.addEventListener('click', () => {
+      dialog.close();
+    });
+    dialog.restartEl.addEventListener('click', () => {
+      console.log('🚀 ~ dialog.restartEl.addEventListener ~ restartEl:');
+      gameRestart();
+      dialog.close();
+    });
   },
 };
 
@@ -409,6 +431,18 @@ const bake = {
 
 const gameStart = () => {
   arrow.init();
+  selectFood.init();
+  dialog.init();
+};
+
+const gameRestart = () => {
+  state = JSON.parse(JSON.stringify(defaultState));
+
+  while (foodAreaEl.firstChild) {
+    foodAreaEl.removeChild(foodAreaEl.firstChild);
+  }
+
+  ui.update();
   selectFood.init();
 };
 
@@ -429,6 +463,10 @@ window.addEventListener('keydown', (e) => {
 
 playerEl.addEventListener('click', () => {
   throwFood();
+});
+
+selectFood.changeFoodEl.addEventListener('click', () => {
+  selectFood.changeFood();
 });
 
 ui.startBakeEl.addEventListener('click', () => {
