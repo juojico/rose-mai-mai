@@ -18,6 +18,14 @@
     />
     <link rel="stylesheet" href="./css/main.css" />
     <link rel="stylesheet" href="./css/game.css" />
+
+    <!-- preload -->
+    <link rel="preload" href="./img/game/cream.png" as="image" />
+    <link rel="preload" href="./img/game/egg-white.png" as="image" />
+    <link rel="preload" href="./img/game/egg-yellow.png" as="image" />
+    <link rel="preload" href="./img/game/milk.png" as="image" />
+    <link rel="preload" href="./img/game/sugar.png" as="image" />
+
   </head>
   <body>
     <div class="gameContainer">
@@ -45,6 +53,7 @@
         <!-- dialog -->
         <div class="dialogContainer" id="dialog">
           <div class="resultArea" id="resultArea">
+            <img class="resultImg" id="resultImg" src="./img/game/result/rose-mai-mai.png"></img>
             <div class="resultPudding" id="resultPudding"></div>
             <div class="resultDetails" id="resultDetails"></div>
             <div class="button" id="continue">繼續調整</div>

@@ -17,8 +17,10 @@ const foods = [
   { name: 'cream', text: '鮮奶油', weight: 10, price: 2.5 },
   { name: 'eggYellow', text: '蛋黃', weight: 5, price: 2 },
   { name: 'eggWhite', text: '蛋白', weight: 5, price: 0.5 },
-  { name: 'sugar', text: '糖', weight: 2, price: 0.4 },
+  { name: 'sugar', text: '糖', weight: 5, price: 0.2 },
 ];
+
+const adding = [{ name: 'vanilla', text: '香草醬', weight: 1, price: 4 }];
 
 const defaultState = {
   currentFoodIndex: 0,
@@ -156,9 +158,8 @@ const playerEl = document.getElementById('player');
 const throwFood = () => {
   if (setting.needShotOver && hasThrow) return;
 
-  const topValue = 1.9;
+  const topValue = 1.7;
   const g = 0.02 * decimal;
-  let wind = Math.random() - 0.5;
   const radians = ((arrow.deg + 90) * Math.PI) / 180;
   let topAdd = Math.round(
     Math.cos(radians) * topValue * decimal + Math.random() * random
@@ -179,7 +180,6 @@ const throwFood = () => {
   } else {
     state.throwElements[foodName] = 1;
   }
-  console.log('🚀 ~ throwFood ~ state.throwElements:', state.throwElements);
 
   const food = document.createElement('div');
 
@@ -242,7 +242,6 @@ const throwFood = () => {
       }
     } else {
       topAdd += g;
-      leftAdd += wind;
     }
 
     top += topAdd / decimal;
@@ -264,6 +263,7 @@ const bake = {
   data: {},
   resultPuddingEl: document.getElementById('resultPudding'),
   resultDetailsEl: document.getElementById('resultDetails'),
+  resultImgEl: document.getElementById('resultImg'),
   calc: () => {
     // 計算比例及成本
     let total = 0;
@@ -299,6 +299,7 @@ const bake = {
     bake.resultDetailsEl.textContent = resultDetails;
   },
   start: () => {
+    bake.data = {};
     bake.calc();
 
     const total = bake.data.total;
@@ -328,61 +329,73 @@ const bake = {
 
     let result = '你烤出了一個意想不到的布丁!';
 
+    let resultImg = 'rose-mai-mai';
+
     switch (true) {
       /* ====== 沒烤出布丁 ====== */
       // 只有糖
       case s >= total:
         result = `獲得 ${state.cups} 杯熱熱的糖! (你只加了糖)`;
         isFail = true;
+        resultImg = 'sugar';
         break;
       // 糖過多
       case s / total > 0.4:
         result = `獲得 ${state.cups} 杯糖漿! (糖比例過高)`;
         isFail = true;
+        resultImg = 'syrup';
         break;
       // 只有蛋黃和蛋白
       case y + w + s >= total:
         result = `獲得 ${state.cups} 塊硬硬的蒸蛋! (你只加了蛋)`;
         isFail = true;
+        resultImg = 'egg';
         break;
       // 沒有加蛋
       case m + c + s >= total:
         result = `獲得 ${state.cups} 杯熱牛奶! (你沒有加蛋)`;
         isFail = true;
+        resultImg = 'milk';
         break;
       // 蛋黃蛋白<1/8
       case (y + w) / total < 0.125:
-        result = '布丁沒有成型! (蛋黃+蛋白需至少佔1/8)';
+        result = '布丁沒有成型! (蛋比例過少)';
         isFail = true;
+        resultImg = 'fail';
         break;
       // 蛋黃蛋白>1/2
       case (y + w) / total > 0.4:
         result = `獲得 ${state.cups} 杯蒸蛋! (蛋比例過高)`;
         isFail = true;
+        resultImg = 'egg';
         break;
 
       /* ====== 基本布丁類別 ====== */
       // 奶酪
       case y <= 0:
         result = `獲得 ${state.cups} 杯奶酪`;
+        resultImg = 'cheese';
         break;
       // 中式硬布丁
       case c / total < 0.1 && w / (y + w) >= 0.5 && (y + w) / total > 0.25:
         result = `烤出了 ${state.cups} 杯中式硬布丁`;
+        resultImg = 'hard';
         break;
       // 昭和硬布丁
-      case c / total < 0.2 &&
+      case c / total < 0.25 &&
         y / (y + w) > 0.5 &&
         (y + w) / total > 0.25 &&
         s / total > 0.04:
         result = `烤出了 ${state.cups} 杯昭和硬布丁`;
+        resultImg = 'showa';
         break;
       // 布蕾
-      case c / total > 0.35 &&
+      case c / total > 0.3 &&
         y / (y + w) >= 0.9 &&
-        (y + w) / total < 0.2 &&
+        (y + w) / total < 0.25 &&
         s / total > 0.04:
         result = `烤出了 ${state.cups} 杯布蕾`;
+        resultImg = 'bree';
         break;
       // 螺絲麥麥的軟布丁
       case c / total > 0.3 &&
@@ -392,14 +405,17 @@ const bake = {
         (y + w) / total < 0.2 &&
         y / (y + w) > 0.5:
         result = `恭喜你!!烤出了 ${state.cups} 杯螺絲麥麥的軟布丁!`;
+        resultImg = 'rose-mai-mai';
         break;
       // 硬布丁
       case c / total < 0.2 || (y + w) / total > 0.25:
         result = `烤出了 ${state.cups} 杯硬布丁`;
+        resultImg = 'hard';
         break;
       // 軟布丁
       case c / total >= 0.2 || (y + w) / total <= 0.25:
         result = `烤出了 ${state.cups} 杯軟布丁`;
+        resultImg = 'soft';
         break;
 
       /* ====== 口感 ====== */
@@ -410,6 +426,8 @@ const bake = {
     }
 
     console.log('🚀 ~ startBake ~ result:', result);
+
+    bake.resultImgEl.src = `./img/game/result/${resultImg}.png`;
 
     bake.resultPuddingEl.textContent = result;
     dialog.open();
