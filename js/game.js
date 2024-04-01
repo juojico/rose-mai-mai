@@ -24,7 +24,7 @@ const foods = [
   { name: 'sugar', text: '糖', weight: 5, price: 0.2 },
 ];
 
-const adding = [{ name: 'vanilla', text: '香草醬', weight: 1, price: 4 }];
+const adding = [{ name: 'vanilla', text: '香草醬', weight: 1.25, price: 5 }];
 
 const defaultState = {
   currentFoodIndex: 0,
@@ -209,7 +209,7 @@ const throwFood = () => {
 
     if (currentFoodId === foodId) {
       playerEl.classList.toggle('on', hasThrow && frames < 10);
-      selectFood.el.classList.toggle('hide', hasThrow && frames < 20);
+      selectFood.el.classList.toggle('hide', hasThrow && frames < 10);
     }
 
     // 是否進球
@@ -290,6 +290,12 @@ const bake = {
       return `${item.text} ... ${i[1] * item.weight}g`;
     });
 
+    // 額外食材
+    const copies = Math.ceil(state.cups / 2);
+    const addingText = `${adding[0].text} ... ${copies * adding[0].weight}cc`;
+
+    totalPrice += copies * adding[0].price;
+
     bake.data.total = total;
 
     // 計算耗損成本
@@ -303,9 +309,9 @@ const bake = {
 
     const resultDetails = `你的配方:\n${list.join(
       '\n'
-    )}\n食材成本:${numberFormat(totalPrice)}元\n損耗成本:${numberFormat(
-      throwTotalPrice
-    )}元`;
+    )}\n${addingText}\n食材成本:${numberFormat(
+      totalPrice
+    )}元\n損耗成本:${numberFormat(throwTotalPrice)}元`;
 
     console.log(resultDetails);
 
@@ -420,18 +426,15 @@ const bake = {
         result = `恭喜你!!烤出了 ${state.cups} 杯螺絲麥麥的軟布丁!`;
         resultImg = 'rose-mai-mai';
         break;
-      // 硬布丁
-      case c / total < 0.2 || (y + w) / total > 0.25:
-        result = `烤出了 ${state.cups} 杯硬布丁`;
-        resultImg = 'hard';
-        break;
       // 軟布丁
       case c / total >= 0.2 || (y + w) / total <= 0.25:
         result = `烤出了 ${state.cups} 杯軟布丁`;
         resultImg = 'soft';
         break;
-
+      // 硬布丁
       default:
+        result = `烤出了 ${state.cups} 杯硬布丁`;
+        resultImg = 'hard';
         break;
     }
 
@@ -445,8 +448,17 @@ const bake = {
     if (isSuccess) {
       // 口感
       switch (true) {
+        case c / total > 0.3 && (y + w) / total <= 0.2:
+          resultComment += `入口即化`;
+          break;
+        case c / total >= 0.2 || (y + w) / total <= 0.25:
+          resultComment += `口感綿密`;
+          break;
         case w / total >= 0.3:
           resultComment += `超硬`;
+          break;
+        case (y + w) / total > 0.25:
+          resultComment += `口感偏硬，蛋味明顯`;
           break;
         case w / total >= 0.12:
           resultComment += `口感Q彈`;
@@ -455,11 +467,9 @@ const bake = {
           resultComment += `口感綿密柔滑，蛋香濃郁`;
           break;
         case y / total >= 0.12:
-          resultComment += `口感扎實綿密，蛋香濃郁`;
+          resultComment += `口感紮實綿密，蛋香濃郁`;
           break;
-        case (y + w) / total > 0.25:
-          resultComment += `口感偏硬，蛋味明顯`;
-          break;
+
         case c / total < 0.2:
           resultComment += `口感偏硬`;
           break;
@@ -471,23 +481,28 @@ const bake = {
       // 甜度
       switch (true) {
         case s / total >= 0.3:
-          resultComment += `，甜死人了!!`;
+          resultComment += `，超爆甜，連螞蟻都甜死了!!`;
           break;
         case s / total >= 0.2:
-          resultComment += `，也太甜了吧`;
+          resultComment += `，甜死人了!`;
           break;
-        case s / total >= 0.1 && c / total > 0.4:
+        case s / total >= 0.14:
+          resultComment += `，好甜，做給螞蟻人吃的吧`;
+          break;
+        case s / total >= 0.08 && c / total > 0.4:
           resultComment += `，有點甜膩`;
           break;
-        case s / total >= 0.1:
+        case s / total >= 0.06:
           resultComment += `，有點甜`;
           break;
         case s / total >= 0.03:
           resultComment += `，不會太甜，很剛好`;
           break;
-        case s / total < 0.03:
+        case s / total >= 0.01:
+          resultComment += `，好像可以甜一點`;
+          break;
         default:
-          resultComment += `，有點沒味道`;
+          resultComment += `，是不是忘了加糖？`;
           break;
       }
 
@@ -509,7 +524,7 @@ const bake = {
           break;
       }
 
-      bake.resultCommentEl.textContent = `「 ${resultComment} 」`;
+      bake.resultCommentEl.textContent = `某客人：「 ${resultComment} 」`;
     }
 
     dialog.open();
