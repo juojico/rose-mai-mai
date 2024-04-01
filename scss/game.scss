@@ -34,6 +34,7 @@ body {
   background-color: hsl(1deg 100% 80% / 100%);
   transform-origin: right bottom;
   z-index: 9;
+  transition: transform 0.1s linear;
 }
 
 .player {
@@ -206,6 +207,7 @@ body {
     display: flex;
   }
 }
+
 .resultArea {
   position: absolute;
   width: 300px;
@@ -224,10 +226,18 @@ body {
     }
   }
 }
+
 .resultPudding {
   font-size: 20px;
   color: #f05522;
 }
+
+.resultComment {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #aaa;
+}
+
 .resultDetails {
   margin: 20px auto;
   white-space: break-spaces;

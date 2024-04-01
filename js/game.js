@@ -10,6 +10,10 @@ const setting = {
     x: [16, 42],
     y: [62, 70],
   },
+  // 箭頭速度(1~20)
+  arrowSpeed: 5,
+  // 食材動畫速度(1~3)
+  foodSpeed: 2,
 };
 
 const foods = [
@@ -70,14 +74,14 @@ const ui = {
 /* ====== 箭頭 ====== */
 
 const arrow = {
-  rotateMax: 100,
-  rotateMin: 30,
-  deg: 30,
-  rotateTo: 1,
+  rotateMax: 90,
+  rotateMin: 40,
+  deg: 40,
+  rotateTo: setting.arrowSpeed,
   el: document.getElementById('arrow'),
   reset: () => {
     arrow.deg = 30;
-    arrow.rotateTo = 1;
+    arrow.rotateTo = setting.arrowSpeed;
     arrow.el.style.transform = `rotate(${(arrow.deg += arrow.rotateTo)}deg)`;
   },
   animate: () => {
@@ -85,13 +89,15 @@ const arrow = {
       arrow.el.style.transform = `rotate(${(arrow.deg += arrow.rotateTo)}deg)`;
 
       if (arrow.deg > arrow.rotateMax) {
-        arrow.rotateTo = -1;
+        arrow.rotateTo = -setting.arrowSpeed;
       }
       if (arrow.deg < arrow.rotateMin) {
-        arrow.rotateTo = 1;
+        arrow.rotateTo = setting.arrowSpeed;
       }
 
-      window.requestAnimationFrame(arrowAnimate);
+      setTimeout(() => {
+        window.requestAnimationFrame(arrowAnimate);
+      }, 100);
     };
 
     arrowAnimate();
@@ -147,7 +153,7 @@ const selectFood = {
 /* ====== 投球 ====== */
 
 let hasThrow = false;
-let foodId = 1;
+let foodId = 0;
 
 const decimal = 10000;
 const random = setting.throwFoodRandom * 100;
@@ -158,19 +164,21 @@ const playerEl = document.getElementById('player');
 const throwFood = () => {
   if (setting.needShotOver && hasThrow) return;
 
-  const topValue = 1.7;
-  const g = 0.02 * decimal;
-  const radians = ((arrow.deg + 90) * Math.PI) / 180;
+  const topValue = 1.7 * setting.foodSpeed;
+  const g = 0.05 * setting.foodSpeed * decimal;
+  const radians = ((arrow.deg + 85) * Math.PI) / 180;
   let topAdd = Math.round(
     Math.cos(radians) * topValue * decimal + Math.random() * random
   );
   let leftAdd = Math.round(
-    -Math.sin(radians) * decimal + Math.random() * random
+    -Math.sin(radians) * setting.foodSpeed * decimal + Math.random() * random
   );
   let top = 79;
   let left = 80;
   let isAlreadyIn = false;
   let frames = 0;
+
+  const currentFoodId = ++foodId;
 
   hasThrow = true;
 
@@ -183,7 +191,7 @@ const throwFood = () => {
 
   const food = document.createElement('div');
 
-  food.id = `food${++foodId}`;
+  food.id = `food${currentFoodId}`;
   food.classList = `food ${foodName}`;
   food.setAttribute('data-food', foodName);
   food.style.top = `${top}%`;
@@ -199,8 +207,10 @@ const throwFood = () => {
   const foodAnimate = () => {
     frames++;
 
-    playerEl.classList.toggle('on', hasThrow && frames < 10);
-    selectFood.el.classList.toggle('hide', hasThrow && frames < 20);
+    if (currentFoodId === foodId) {
+      playerEl.classList.toggle('on', hasThrow && frames < 10);
+      selectFood.el.classList.toggle('hide', hasThrow && frames < 20);
+    }
 
     // 是否進球
     if (!isAlreadyIn) {
@@ -251,7 +261,9 @@ const throwFood = () => {
     food.style.left = `${left}%`;
     food.style.transform = `translate(-50%, -50%) rotate(${left * 10}deg)`;
 
-    window.requestAnimationFrame(foodAnimate);
+    setTimeout(() => {
+      window.requestAnimationFrame(foodAnimate);
+    }, 30);
   };
 
   foodAnimate();
@@ -262,6 +274,7 @@ const throwFood = () => {
 const bake = {
   data: {},
   resultPuddingEl: document.getElementById('resultPudding'),
+  resultCommentEl: document.getElementById('resultComment'),
   resultDetailsEl: document.getElementById('resultDetails'),
   resultImgEl: document.getElementById('resultImg'),
   calc: () => {
@@ -325,10 +338,10 @@ const bake = {
       's ' + (s / total).toFixed(3)
     );
 
-    let isFail = false;
+    let isSuccess = true;
 
     let result = '你烤出了一個意想不到的布丁!';
-
+    let resultComment = '';
     let resultImg = 'rose-mai-mai';
 
     switch (true) {
@@ -336,37 +349,37 @@ const bake = {
       // 只有糖
       case s >= total:
         result = `獲得 ${state.cups} 杯熱熱的糖! (你只加了糖)`;
-        isFail = true;
+        isSuccess = false;
         resultImg = 'sugar';
         break;
       // 糖過多
       case s / total > 0.4:
         result = `獲得 ${state.cups} 杯糖漿! (糖比例過高)`;
-        isFail = true;
+        isSuccess = false;
         resultImg = 'syrup';
         break;
       // 只有蛋黃和蛋白
       case y + w + s >= total:
         result = `獲得 ${state.cups} 塊硬硬的蒸蛋! (你只加了蛋)`;
-        isFail = true;
+        isSuccess = false;
         resultImg = 'egg';
         break;
       // 沒有加蛋
       case m + c + s >= total:
         result = `獲得 ${state.cups} 杯熱牛奶! (你沒有加蛋)`;
-        isFail = true;
+        isSuccess = false;
         resultImg = 'milk';
         break;
       // 蛋黃蛋白<1/8
       case (y + w) / total < 0.125:
         result = '布丁沒有成型! (蛋比例過少)';
-        isFail = true;
+        isSuccess = false;
         resultImg = 'fail';
         break;
       // 蛋黃蛋白>1/2
       case (y + w) / total > 0.4:
         result = `獲得 ${state.cups} 杯蒸蛋! (蛋比例過高)`;
-        isFail = true;
+        isSuccess = false;
         resultImg = 'egg';
         break;
 
@@ -418,9 +431,6 @@ const bake = {
         resultImg = 'soft';
         break;
 
-      /* ====== 口感 ====== */
-      /* ====== 味道 ====== */
-
       default:
         break;
     }
@@ -430,6 +440,78 @@ const bake = {
     bake.resultImgEl.src = `./img/game/result/${resultImg}.png`;
 
     bake.resultPuddingEl.textContent = result;
+
+    /* ====== 評論 ====== */
+    if (isSuccess) {
+      // 口感
+      switch (true) {
+        case w / total >= 0.3:
+          resultComment += `超硬`;
+          break;
+        case w / total >= 0.12:
+          resultComment += `口感Q彈`;
+          break;
+        case y / total >= 0.12 && c / total > 0.3:
+          resultComment += `口感綿密柔滑，蛋香濃郁`;
+          break;
+        case y / total >= 0.12:
+          resultComment += `口感扎實綿密，蛋香濃郁`;
+          break;
+        case (y + w) / total > 0.25:
+          resultComment += `口感偏硬，蛋味明顯`;
+          break;
+        case c / total < 0.2:
+          resultComment += `口感偏硬`;
+          break;
+        default:
+          resultComment = `口感軟綿`;
+          break;
+      }
+
+      // 甜度
+      switch (true) {
+        case s / total >= 0.3:
+          resultComment += `，甜死人了!!`;
+          break;
+        case s / total >= 0.2:
+          resultComment += `，也太甜了吧`;
+          break;
+        case s / total >= 0.1 && c / total > 0.4:
+          resultComment += `，有點甜膩`;
+          break;
+        case s / total >= 0.1:
+          resultComment += `，有點甜`;
+          break;
+        case s / total >= 0.03:
+          resultComment += `，不會太甜，很剛好`;
+          break;
+        case s / total < 0.03:
+        default:
+          resultComment += `，有點沒味道`;
+          break;
+      }
+
+      // 整體
+      switch (true) {
+        case c / total > 0.1 &&
+          m / total > 0.4 &&
+          s / total > 0.035 &&
+          s / total < 0.06 &&
+          y / (y + w) > 0.5:
+          resultComment += `，非常美味!`;
+          break;
+        case s / total >= 0.03 &&
+          s / total < 0.1 &&
+          y / total > 0.08 &&
+          y / total < 0.3 &&
+          w / total < 0.2:
+          resultComment += `，好吃!`;
+          break;
+      }
+
+      bake.resultCommentEl.textContent = `「 ${resultComment} 」`;
+    }
+
     dialog.open();
   },
 };

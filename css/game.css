@@ -29,6 +29,7 @@ body {
   background-color: hsl(1, 100%, 80%);
   transform-origin: right bottom;
   z-index: 9;
+  transition: transform 0.1s linear;
 }
 
 .player {
@@ -207,6 +208,12 @@ body {
 .resultPudding {
   font-size: 20px;
   color: #f05522;
+}
+
+.resultComment {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #aaa;
 }
 
 .resultDetails {
